@@ -1,0 +1,57 @@
+{
+  "name": "nickkadutskyi/wp",
+  "description": "WordPress boilerplate with Composer",
+  "homepage": "https://github.com/nickkadutskyi/wp",
+  "support": {
+    "issues": "https://github.com/nickkadutskyi/issues"
+  },
+  "keywords": [
+    "composer",
+    "wordpress",
+    "wp",
+    "wp-config"
+  ],
+  "authors": [
+    {
+      "name": "Nick Kadutskyi",
+      "email": "nick@kadutskyi.com",
+      "homepage": "https://github.com/nickkadutskyi"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*",
+        "wpackagist-theme/*"
+      ]
+    }
+  ],
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.3",
+    "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-imagick": "*",
+    "ext-openssl": "*",
+    "wp-cli/wp-cli": "dev-main",
+    "wp-cli/wp-cli-bundle": "*",
+    "wpackagist-plugin/akismet": "dev-trunk",
+    "wpackagist-theme/twentytwentyfive": "*"
+  },
+  "extra": {
+    "installer-paths": {
+      "public/content/mu-plugins/vendor-{$name}/": [
+        "type:wordpress-muplugin"
+      ],
+      "public/content/plugins/vendor-{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "public/content/themes/vendor-{$name}/": [
+        "type:wordpress-theme"
+      ]
+    }
+  }
+}
