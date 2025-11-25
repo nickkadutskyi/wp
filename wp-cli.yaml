@@ -1,4 +1,10 @@
 path: "public"
+user: null
+core update:
+  locale: "en_US"
+core download:
+  locale: "en_US"
+  version: 6.8.3
 disabled_commands:
   - db drop
   - plugin install

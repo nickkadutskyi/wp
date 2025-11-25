@@ -36,8 +36,6 @@
     "ext-exif": "*",
     "ext-imagick": "*",
     "ext-openssl": "*",
-    "wp-cli/wp-cli": "dev-main",
-    "wp-cli/wp-cli-bundle": "*",
     "wpackagist-plugin/akismet": "dev-trunk",
     "wpackagist-theme/twentytwentyfive": "*"
   },
