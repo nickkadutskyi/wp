@@ -51,5 +51,10 @@
         "type:wordpress-theme"
       ]
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
   }
 }
