@@ -32,4 +32,5 @@
 .vagrant
 .DS_Store
 .php-version
+*.phar
 ###< dev environtment ###

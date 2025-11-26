@@ -5,7 +5,7 @@ WordPress boilerplate with Composer
 - WordPress core files are always separate from wp-content and are managed by WP-CLI
 
 ## Initial Setup
-```
+```bash
 composer create-project nickkadutskyi/wp
 ```
 

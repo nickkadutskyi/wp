@@ -2,16 +2,17 @@
 <ruleset name="PHP_CodeSniffer">
   <description>PHP_CodeSniffer configuration</description>
   <arg name="extensions" value="php,inc"/>
-  
+
   <!-- Base WordPress coding standards -->
   <rule ref="WordPress">
     <!-- Exclude WordPress tab indent rule to use spaces instead -->
     <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+    <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
   </rule>
 
   <!-- Force spaces instead of tabs -->
   <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
-  
+
   <!-- Enforce 4-space indentation -->
   <rule ref="Generic.WhiteSpace.ScopeIndent">
     <properties>

@@ -7,6 +7,8 @@
  * @package WPStarter
  */
 
+declare(strict_types=1);
+
 use Symfony\Component\Dotenv\Dotenv;
 
 /**
@@ -48,7 +50,7 @@ if ( ! empty( $missing_env_vars ) ) {
     throw new RuntimeException( 'Missing required environment variables: ' . implode( ', ', $missing_env_vars ) );
 }
 
-// Sets WP's environment (local, development, staging, production)
+// Sets WP's environment (local, development, staging, production).
 define( 'WP_ENVIRONMENT_TYPE', $_ENV['WP_ENVIRONMENT_TYPE'] ?? 'development' );
 
 define( 'WP_SITEURL', $_ENV['WP_SITEURL'] );
