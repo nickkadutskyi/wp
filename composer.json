@@ -37,7 +37,8 @@
     "ext-imagick": "*",
     "ext-openssl": "*",
     "wpackagist-plugin/akismet": "dev-trunk",
-    "wpackagist-theme/twentytwentyfive": "*"
+    "wpackagist-theme/twentytwentyfive": "*",
+    "symfony/dotenv": "^7.3"
   },
   "extra": {
     "installer-paths": {
@@ -66,5 +67,12 @@
       "chmod +x bin/wp-install",
       "chmod +x bin/wp-update"
     ]
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.90",
+    "phpstan/phpstan": "^2.1",
+    "vimeo/psalm": "^6.13",
+    "szepeviktor/phpstan-wordpress": "^2.0",
+    "humanmade/psalm-plugin-wordpress": "^3.1"
   }
 }

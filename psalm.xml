@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<psalm
+  errorLevel="1"
+  limitMethodComplexity="true"
+  findUnusedVariablesAndParams="true"
+  findUnusedCode="true"
+  findUnusedPsalmSuppress="true"
+  findUnusedBaselineEntry="true"
+>
+  <projectFiles>
+    <directory name="public/content"/>
+    <directory name="config"/>
+    <ignoreFiles allowMissingFiles="true">
+      <directory name="vendor"/>
+      <directory name=".devenv"/>
+      <directory name=".direnv"/>
+      <directory name="tests"/>
+      <directory name="public/wp"/>
+      <directory name="public/content/mu-plugins/vendor-*"/>
+      <directory name="public/content/plugins/vendor-*"/>
+      <directory name="public/content/themes/vendor-*"/>
+      <directory name="public/content/uploads"/>
+    </ignoreFiles>
+  </projectFiles>
+  <issueHandlers>
+    <UnusedVariable errorLevel="info"/>
+    <UnnecessaryVarAnnotation errorLevel="info"/>
+  </issueHandlers>
+  <plugins>
+    <pluginClass xmlns="https://getpsalm.org/schema/config" class="Psalm\LaravelPlugin\Plugin"/>
+  <pluginClass xmlns="https://getpsalm.org/schema/config" class="PsalmWordPress\Plugin"/></plugins>
+</psalm>

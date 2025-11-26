@@ -47,6 +47,7 @@
                 {
                   packages = [
                     # PHP
+                    pkgs.intelephense
                     pkgs.phpactor
                     # Tools
                     pkgs.vscode-langservers-extracted # For HTML, CSS, JSON, and other languages

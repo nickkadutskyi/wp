@@ -1,0 +1,29 @@
+includes:
+  - vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+  level: max
+
+  paths:
+    - public/content
+    - config
+  excludePaths:
+    analyze:
+      - public/content/mu-plugins/vendor-*
+      - public/content/plugins/vendor-*
+      - public/content/themes/vendor-*
+      - public/content/uploads
+      - public/wp
+      - vendor
+
+  ignoreErrors:
+        # -
+        #     message: '#Offset (.*?) does not exist on array\|null#'
+        #     paths:
+        #         - tests/*
+        # -
+        #    message: '#expects resource, resource\|false given#'
+        #    paths:
+        #        - tests/*
+        # - '#should return \$this#'
+
+

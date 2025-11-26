@@ -14,3 +14,18 @@ else
 fi
 
 echo "Using wp-cli: $($WP --info | grep 'WP-CLI version')"
+
+CURRENT_VERSION=$($WP core version)
+# Update core files
+$WP core update "$@" 2>/dev/null
+# Update database
+$WP core update-db 2>/dev/null
+NEW_VERSION=$($WP core version)
+
+if [ "$NEW_VERSION" != "$CURRENT_VERSION" ]; then
+  sed -i'.original' -e "s/$CURRENT_VERSION/$NEW_VERSION/g" ./wp-cli.yml
+  rm ./*.original
+  echo "WordPress Core updated from $CURRENT_VERSION to $NEW_VERSION"
+else
+  echo "No update needed, current version is already $CURRENT_VERSION"
+fi
