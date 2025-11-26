@@ -57,10 +57,10 @@
                   # MariaDB / MySQL service configuration
                   services.mysql = {
                     enable = true;
-                    initialDatabases = [ { name = getEnvDefault "LOCAL_MYSQAL_DB_NAME" "wp"; } ];
+                    initialDatabases = [ { name = getEnvDefault "DB_NAME" "wp"; } ];
                     settings = {
                       mysqld = {
-                        port = getEnvDefault "LOCAL_MYSQL_PORT" "3310";
+                        port = getEnvDefault "DB_PORT" "3306";
                       };
                     };
                   };
