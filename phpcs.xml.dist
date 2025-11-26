@@ -7,7 +7,8 @@
   <rule ref="WordPress">
     <!-- Exclude WordPress tab indent rule to use spaces instead -->
     <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
-    <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+    <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+    <exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
   </rule>
 
   <!-- Force spaces instead of tabs -->
