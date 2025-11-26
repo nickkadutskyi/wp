@@ -130,7 +130,12 @@ define( 'WP_AUTO_UPDATE_CORE', filter_var( $_ENV['WP_AUTO_UPDATE_CORE'] ?? false
 define( 'CONCATENATE_SCRIPTS', filter_var( $_ENV['CONCATENATE_SCRIPTS'] ?? false, FILTER_VALIDATE_BOOL ) );
 
 // Limit the number of post revisions.
-define( 'WP_POST_REVISIONS', filter_var( $_ENV['WP_POST_REVISIONS'] ?? true, FILTER_VALIDATE_BOOL ) );
+define(
+    'WP_POST_REVISIONS',
+    filter_var( $_ENV['WP_POST_REVISIONS'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE )
+        ?? filter_var( $_ENV['WP_POST_REVISIONS'] ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE )
+        ?? true
+);
 
 define( 'DISABLE_WP_CRON', filter_var( $_ENV['DISABLE_WP_CRON'] ?? false, FILTER_VALIDATE_BOOL ) );
 
