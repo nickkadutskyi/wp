@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "874a2b89e81c45ea40a67f96aa7a6dbc",
+    "content-hash": "a9f4f212ed53dc6395e7b313a62f62c7",
     "packages": [
         {
             "name": "composer/installers",
@@ -3114,16 +3114,16 @@
         },
         {
             "name": "spatie/array-to-xml",
-            "version": "3.4.1",
+            "version": "3.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/array-to-xml.git",
-                "reference": "6a740f39415aee8886aea10333403adc77d50791"
+                "reference": "66ea5657f6a7efbf498f21b6536a2fbc5a228a75"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/array-to-xml/zipball/6a740f39415aee8886aea10333403adc77d50791",
-                "reference": "6a740f39415aee8886aea10333403adc77d50791",
+                "url": "https://api.github.com/repos/spatie/array-to-xml/zipball/66ea5657f6a7efbf498f21b6536a2fbc5a228a75",
+                "reference": "66ea5657f6a7efbf498f21b6536a2fbc5a228a75",
                 "shasum": ""
             },
             "require": {
@@ -3166,7 +3166,7 @@
                 "xml"
             ],
             "support": {
-                "source": "https://github.com/spatie/array-to-xml/tree/3.4.1"
+                "source": "https://github.com/spatie/array-to-xml/tree/3.4.2"
             },
             "funding": [
                 {
@@ -3178,7 +3178,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-12T10:32:50+00:00"
+            "time": "2025-11-26T17:06:37+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -4485,7 +4485,6 @@
         "php": ">=8.3",
         "ext-curl": "*",
         "ext-exif": "*",
-        "ext-imagick": "*",
         "ext-openssl": "*"
     },
     "platform-dev": {},
