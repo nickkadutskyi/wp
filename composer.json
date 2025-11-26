@@ -1,9 +1,11 @@
 {
   "name": "nickkadutskyi/wp",
   "description": "WordPress boilerplate with Composer",
+  "type": "project",
+  "license": "MIT",
   "homepage": "https://github.com/nickkadutskyi/wp",
   "support": {
-    "issues": "https://github.com/nickkadutskyi/issues"
+    "issues": "https://github.com/nickkadutskyi/wp/issues"
   },
   "keywords": [
     "composer",
