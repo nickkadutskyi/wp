@@ -66,7 +66,7 @@
                   languages.php = {
                     enable = true;
                     version = "8.4";
-                    extensions = [ "xdebug" ];
+                    extensions = [ "xdebug" "imagick" ];
                     ini = ''
                       memory_limit=256M
                       log_errors_max_len=0

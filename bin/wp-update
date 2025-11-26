@@ -1,0 +1,16 @@
+#!/bin/bash
+# Find wp-cli if not found in PATH
+WP=
+if command -v wp >/dev/null; then
+  WP=$(which wp)
+elif [[ -x "vendor/bin/wp" ]]; then
+  WP="vendor/bin/wp"
+elif [[ -f "./wp-cli.phar" ]]; then
+  [[ ! -x "./wp-cli.phar" ]] && chmod +x wp-cli.phar
+  WP="./wp-cli.phar"
+else
+  echo "wp-cli not found" >&2
+  exit 1
+fi
+
+echo "Using wp-cli: $($WP --info | grep 'WP-CLI version')"

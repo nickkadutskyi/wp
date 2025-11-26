@@ -16,6 +16,7 @@
 /public/content/uploads/*
 !/public/content/uploads/.gitignore
 /public/content/upgrade
+/wp-cli.phar
 ###< wordpress ###
 
 .devenv

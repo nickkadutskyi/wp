@@ -1,4 +1,4 @@
-path: "public"
+path: "public/wp"
 user: null
 core update:
   locale: "en_US"

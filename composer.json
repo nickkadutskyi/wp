@@ -56,5 +56,15 @@
     "allow-plugins": {
       "composer/installers": true
     }
+  },
+  "scripts": {
+    "post-root-package-install": [
+      "chmod +x bin/wp-install",
+      "chmod +x bin/wp-update"
+    ],
+    "post-install-cmd": [
+      "chmod +x bin/wp-install",
+      "chmod +x bin/wp-update"
+    ]
   }
 }
