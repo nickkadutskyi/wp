@@ -9,6 +9,7 @@
  * phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
  * phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
  * phpcs:disable Generic.Commenting.DocComment.MissingShort
+ * phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
  */
 
 declare(strict_types=1);
@@ -72,8 +73,8 @@ if ( ! ( $_ENV['WP_ENVIRONMENT_TYPE'] ?? null ) && in_array( APP_ENV, [ 'product
 /**
  * Define WP_HOME and WP_SITEURL from environment variables
  */
-define( 'WP_HOME', $_ENV['WP_HOME'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . wp_unslash( $_SERVER['HTTP_HOST'] ) : '' );
-define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . wp_unslash( $_SERVER['HTTP_HOST'] ) : '' );
+define( 'WP_HOME', $_ENV['WP_HOME'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' );
+define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' );
 
 // Custom content directory.
 /** @var string $content_dir */
@@ -137,9 +138,9 @@ define( 'DISABLE_WP_CRON', $_ENV['DISABLE_WP_CRON'] ?? false );
  * Allow WordPress to detect HTTPS when used behind a reverse proxy or load balancer
  * See https://developer.wordpress.org/reference/functions/is_ssl/#more-information
  */
-if ( 'https' === ( wp_unslash( $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '' ) )
-        || 'https' === ( wp_unslash( $_SERVER['HTTP_CLOUDFRONT_FORWARDED_PROTO'] ?? '' ) )
-        || 'https' === ( wp_unslash( $_SERVER['CloudFront-Forwarded-Proto'] ?? '' ) )
+if ( 'https' === ( $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '' )
+        || 'https' === ( $_SERVER['HTTP_CLOUDFRONT_FORWARDED_PROTO'] ?? '' )
+        || 'https' === ( $_SERVER['CloudFront-Forwarded-Proto'] ?? '' )
 ) {
     $_SERVER['HTTPS'] = 'on';
 }

@@ -49,6 +49,7 @@
                     # PHP
                     pkgs.intelephense
                     pkgs.phpactor
+                    pkgs.wp-cli
                     # Tools
                     pkgs.vscode-langservers-extracted # For HTML, CSS, JSON, and other languages
                     pkgs.emmet-ls # Emmet support for HTML and CSS
@@ -116,7 +117,7 @@
                       if [ ! -f "${config.env.DEVENV_STATE}/php/error.log" ]; then
                         mkdir -p "${config.env.DEVENV_STATE}/php"
                         touch "${config.env.DEVENV_STATE}/php/error.log"
-                        echo "PHP error log initialized at ${config.env.DEVENV_STATE}/php/error.log" 
+                        echo "PHP error log initialized at ${config.env.DEVENV_STATE}/php/error.log"
                       fi
 
                       trap down SIGHUP EXIT
