@@ -33,6 +33,7 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          FPMPort = getEnvDefault "LOCAL_PHP_FPM_PORT" "3030";
         in
         {
           default = devenv.lib.mkShell {
@@ -41,9 +42,6 @@
               (
                 { pkgs, config, ... }:
                 # This is your devenv configuration
-                let
-                  FPMPort = getEnvDefault "LOCAL_PHP_FPM_PORT" "3030";
-                in
                 {
                   packages = [
                     # PHP
@@ -68,7 +66,10 @@
                   languages.php = {
                     enable = true;
                     version = "8.4";
-                    extensions = [ "xdebug" "imagick" ];
+                    extensions = [
+                      "xdebug"
+                      "imagick"
+                    ];
                     ini = ''
                       memory_limit=256M
                       log_errors_max_len=0
@@ -122,11 +123,21 @@
 
                       trap down SIGHUP EXIT
                     '';
+                  process.manager.after = # bash
+                    ''
+                      if [ -f "${config.env.DEVENV_STATE}/php/error.log" ]; then
+                        rm "${config.env.DEVENV_STATE}/php/error.log"
+                      fi
+                    '';
+
                   processes = {
                     php-error-logs.exec = "tail -f -n0 '${config.env.DEVENV_STATE}/php/error.log'";
                   };
                 }
               )
+              (import ./mac-apache-vhost.nix {
+                inherit FPMPort;
+              })
             ];
           };
         }
