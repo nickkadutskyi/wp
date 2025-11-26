@@ -12,8 +12,9 @@ vim.g.settings = {
     phpactor = { use_for = { LSP = true } },
     intelephense = { use_for = { LSP = true, STYLE = false } },
     -- Style
-    php_cs_fixer = { use_for = { STYLE = true } },
+    phpcbf = { use_for = { STYLE = true } },
     -- Quality
+    phpcs = { use_for = { INSPECTION = true } },
     psalm = { use_for = { LSP = false, INSPECTION = true } },
     phpstan = { use_for = { INSPECTION = true } },
   },
@@ -22,4 +23,3 @@ vim.g.settings = {
   },
 }
 vim.api.nvim_command("doautocmd User SettingsLoaded")
-

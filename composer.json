@@ -55,7 +55,8 @@
   },
   "config": {
     "allow-plugins": {
-      "composer/installers": true
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
     }
   },
   "scripts": {
@@ -69,10 +70,10 @@
     ]
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.90",
     "phpstan/phpstan": "^2.1",
     "vimeo/psalm": "^6.13",
     "szepeviktor/phpstan-wordpress": "^2.0",
-    "humanmade/psalm-plugin-wordpress": "^3.1"
+    "humanmade/psalm-plugin-wordpress": "^3.1",
+    "wp-coding-standards/wpcs": "^3.3"
   }
 }
