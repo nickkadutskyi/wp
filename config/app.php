@@ -111,6 +111,7 @@ define( 'DB_COLLATE', $_ENV['DB_COLLATE'] ?? '' );
  */
 $table_prefix = $_ENV['TABLE_PREFIX'] ?? 'wp_'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
+// Got this from roots/bedrock.
 if ( isset( $_ENV['DATABASE_URL'] ) ) {
     $dsn = (object) wp_parse_url( $_ENV['DATABASE_URL'] );
 
