@@ -34,6 +34,7 @@ $webroot_dir = $root_dir . '/public';
  * Use symfony/dotenv to load environment variables from .env files
  */
 $dotenv = new Dotenv();
+$dotenv->setProdEnvs( [ 'production', 'prod' ] );
 $dotenv->bootEnv( $root_dir . '/.env' );
 
 // Ensure required environment variables are set.
@@ -73,15 +74,15 @@ if ( ! ( $_ENV['WP_ENVIRONMENT_TYPE'] ?? null ) && in_array( APP_ENV, [ 'product
 /**
  * Define WP_HOME and WP_SITEURL from environment variables
  */
-define( 'WP_HOME', $_ENV['WP_HOME'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' );
-define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' );
+define( 'WP_HOME', $_ENV['WP_HOME'] ?? ( isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' ) );
+define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? ( isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' ) );
 
 // Custom content directory.
 /** @var string $content_dir */
 $content_dir = $_ENV['CONTENT_DIR'] ?? '/content';
 define( 'CONTENT_DIR', $content_dir );
 /** @var string $wp_content_dir */
-$wp_content_dir = $_ENV['WP_CONTENT_DIR'] ?? $webroot_dir . $content_dir;
+$wp_content_dir = $_ENV['WP_CONTENT_DIR'] ?? ( $webroot_dir . $content_dir );
 define( 'WP_CONTENT_DIR', $wp_content_dir );
 /** @var string $wp_home */
 $wp_home = $_ENV['WP_HOME'] ?? '';

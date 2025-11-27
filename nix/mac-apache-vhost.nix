@@ -48,17 +48,17 @@ let
             Options -Indexes +FollowSymLinks
 
             <IfModule authz_host_module>
-                  Require all granted
+              Require all granted
             </IfModule>
 
             # BEGIN WordPress
             <IfModule mod_rewrite.c>
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index.php$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.php [L]
+              RewriteEngine On
+              RewriteBase /
+              RewriteRule ^index.php$ - [L]
+              RewriteCond %{REQUEST_FILENAME} !-f
+              RewriteCond %{REQUEST_FILENAME} !-d
+              RewriteRule . /index.php [L]
             </IfModule>
             # END WordPress
           </Directory>
