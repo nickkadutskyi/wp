@@ -6,6 +6,7 @@
 /.env.local.php
 /.env.local
 /.env.*.local
+nix/.env*
 ###< symfony/dotenv ###
 
 ###> wordpress ###

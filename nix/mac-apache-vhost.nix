@@ -1,4 +1,4 @@
-{ FPMPort }:
+{ FPMPort, ServerName }:
 {
   pkgs,
   config,
@@ -12,7 +12,6 @@ let
       value = builtins.getEnv name;
     in
     if value == "" then default else value;
-  ServerName = getEnvDefault "LOCAL_VHOST_SERVER_NAME" "wp.test";
   ApacheConfig = getEnvDefault "LOCAL_APACHE_CONFIG" "/etc/apache2/other";
   DocumentRoot = (config.env.DEVENV_ROOT + "/public");
 

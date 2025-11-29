@@ -33,7 +33,10 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          # To configure your environment, set any env variables in .env.development.local
+          # which is loaded via direnv (see .envrc) into your shell so that nix flake can read them.
           FPMPort = getEnvDefault "LOCAL_PHP_FPM_PORT" "3030";
+          ServerName = getEnvDefault "LOCAL_VHOST_SERVER_NAME" "wp.test";
         in
         {
           default = devenv.lib.mkShell {
@@ -52,6 +55,7 @@
                     pkgs.vscode-langservers-extracted # For HTML, CSS, JSON, and other languages
                     pkgs.emmet-ls # Emmet support for HTML and CSS
                   ];
+
                   # MariaDB / MySQL service configuration
                   services.mysql = {
                     enable = true;
@@ -62,6 +66,7 @@
                       };
                     };
                   };
+
                   # PHP configuration
                   languages.php = {
                     enable = true;
@@ -133,12 +138,115 @@
                   processes = {
                     php-error-logs.exec = "tail -f -n0 '${config.env.DEVENV_STATE}/php/error.log'";
                   };
+
+                  # Nginx configuration
+                  services.nginx = {
+                    enable = true;
+                    httpConfig = # conf
+                      let
+                        DocumentRoot = (config.env.DEVENV_ROOT + "/public");
+                        NginxPort = getEnvDefault "LOCAL_NGINX_PORT" "80";
+                        NginxSSLPort = getEnvDefault "LOCAL_NGINX_SSL_PORT" "443";
+                        CertPath = config.env.DEVENV_STATE + "/mkcert";
+                      in
+                      ''
+                        keepalive_timeout  65;
+
+                        # HTTP server
+                        server {
+                            listen       ${NginxPort};
+                            server_name  ${ServerName};
+                            root ${DocumentRoot};
+                            access_log ${config.env.DEVENV_STATE}/nginx/access.log;
+                            error_log  ${config.env.DEVENV_STATE}/nginx/error.log error;
+
+                            index index.php index.htm index.html;
+
+                            # Preserve port in redirects
+                            port_in_redirect on;
+
+                            # Prevent PHP scripts from being executed inside the uploads folder.
+                            location ~* /content/uploads/.*.php$ {
+                              deny all;
+                            }
+                            location / {
+                              try_files $uri $uri/ /index.php?$args;
+                            }
+
+                            location ~ \.php$ {
+                              try_files $uri =404;
+                              fastcgi_pass 127.0.0.1:${FPMPort};
+                              fastcgi_index index.php;
+                              include ${pkgs.nginx}/conf/fastcgi_params;
+                              fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                              fastcgi_param SERVER_PORT $server_port;
+                              fastcgi_intercept_errors on;
+                            }
+                        }
+
+                        # HTTPS server
+                        server {
+                            listen       ${NginxSSLPort} ssl;
+                            server_name  ${ServerName};
+                            root ${DocumentRoot};
+                            access_log ${config.env.DEVENV_STATE}/nginx/access-ssl.log;
+                            error_log  ${config.env.DEVENV_STATE}/nginx/error-ssl.log error;
+
+                            # SSL configuration
+                            ssl_certificate ${CertPath}/${ServerName}.pem;
+                            ssl_certificate_key ${CertPath}/${ServerName}-key.pem;
+                            ssl_protocols TLSv1.2 TLSv1.3;
+                            ssl_ciphers HIGH:!aNULL:!MD5;
+                            ssl_prefer_server_ciphers on;
+
+                            index index.php index.htm index.html;
+
+                            # Preserve port in redirects
+                            port_in_redirect on;
+
+                            # Prevent PHP scripts from being executed inside the uploads folder.
+                            location ~* /content/uploads/.*.php$ {
+                              deny all;
+                            }
+                            location / {
+                              try_files $uri $uri/ /index.php?$args;
+                            }
+
+                            location ~ \.php$ {
+                              try_files $uri =404;
+                              fastcgi_pass 127.0.0.1:${FPMPort};
+                              fastcgi_index index.php;
+                              include ${pkgs.nginx}/conf/fastcgi_params;
+                              fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                              fastcgi_param SERVER_PORT $server_port;
+                              fastcgi_param HTTPS on;
+                              fastcgi_intercept_errors on;
+                            }
+                        }
+                      '';
+                  };
+
+                  # Generate SSL certificates using mkcert
+                  certificates = [ ServerName ];
                 }
               )
-              (import ./mac-apache-vhost.nix {
-                inherit FPMPort;
-              })
-            ];
+            ]
+            ++ (
+              if pkgs.stdenv.isDarwin then
+                [
+                  # Uncomment the following line to enable Apache virtual host configuration on macOS
+                  # It copies a pre-defined vhost configuration file to your Apache config directory
+                  # to be used with the built-in Apache server on macOS.
+                  # If you enable this, make sure to adjust your /etc/hosts file accordingly.
+                  # Also disable Nginx service above to avoid port conflicts.
+                  #
+                  # (import ./mac-apache-vhost.nix {
+                  #   inherit FPMPort ServerName;
+                  # })
+                ]
+              else
+                [ ]
+            );
           };
         }
       );
