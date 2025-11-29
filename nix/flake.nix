@@ -137,7 +137,16 @@
 
                   processes = {
                     php-error-logs.exec = "tail -f -n0 '${config.env.DEVENV_STATE}/php/error.log'";
-                  };
+                  }
+                  // (
+                    if config.services.nginx.enable then
+                      {
+                        nginx-access-logs.exec = "tail -f -n0 '${config.env.DEVENV_STATE}/nginx/access.log'";
+                        nginx-error-logs.exec = "tail -f -n0 '${config.env.DEVENV_STATE}/nginx/error.log'";
+                      }
+                    else
+                      { }
+                  );
 
                   # Nginx configuration
                   services.nginx = {
@@ -189,8 +198,8 @@
                             listen       ${NginxSSLPort} ssl;
                             server_name  ${ServerName};
                             root ${DocumentRoot};
-                            access_log ${config.env.DEVENV_STATE}/nginx/access-ssl.log;
-                            error_log  ${config.env.DEVENV_STATE}/nginx/error-ssl.log error;
+                            access_log ${config.env.DEVENV_STATE}/nginx/access.log;
+                            error_log  ${config.env.DEVENV_STATE}/nginx/error.log error;
 
                             # SSL configuration
                             ssl_certificate ${CertPath}/${ServerName}.pem;

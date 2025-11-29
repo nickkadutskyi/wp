@@ -80,9 +80,6 @@ let
   vhostConfigSSL = mkVhostFile true;
 in
 {
-  certificates = [
-    ServerName
-  ];
   process.manager.before = # bash
     ''
       APACHE_CONF="${ApacheConfig}/${ServerName}.conf"
