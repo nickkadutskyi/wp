@@ -10,12 +10,22 @@ nix/.env*
 ###< symfony/dotenv ###
 
 ###> wordpress ###
+# Ignore WP Core files
 /public/wp
+
+# Ignore default content directories
+# Ignore vendor folders in content directories, those are managed via composer
 /public/content/mu-plugins/vendor-*
 /public/content/plugins/vendor-*
 /public/content/themes/vendor-*
+# Ignore all content in the uploads and cache directories, except for .gitignore and index.php files
 /public/content/uploads/*
 !/public/content/uploads/.gitignore
+!/public/content/uploads/index.php
+/public/content/cache/*
+!/public/content/cache/.gitignore
+!/public/content/cache/index.php
+# Ignore upgrade files
 /public/content/upgrade
 /wp-cli.phar
 ###< wordpress ###
