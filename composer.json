@@ -45,7 +45,9 @@
   "extra": {
     "installer-paths": {
       "public/content/mu-plugins/vendor-{$name}/": [
-        "type:wordpress-muplugin"
+        "type:wordpress-muplugin",
+        "wpackagist-plugin/debug-bar",
+        "wpackagist-plugin/query-monitor"
       ],
       "public/content/plugins/vendor-{$name}/": [
         "type:wordpress-plugin"
@@ -77,6 +79,8 @@
     "vimeo/psalm": "^6.13",
     "szepeviktor/phpstan-wordpress": "^2.0",
     "humanmade/psalm-plugin-wordpress": "^3.1",
-    "wp-coding-standards/wpcs": "^3.3"
+    "wp-coding-standards/wpcs": "^3.3",
+    "wpackagist-plugin/debug-bar": "dev-trunk",
+    "wpackagist-plugin/query-monitor": "dev-trunk"
   }
 }
