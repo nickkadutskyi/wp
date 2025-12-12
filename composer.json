@@ -45,9 +45,7 @@
   "extra": {
     "installer-paths": {
       "public/content/mu-plugins/vendor-{$name}/": [
-        "type:wordpress-muplugin",
-        "wpackagist-plugin/debug-bar",
-        "wpackagist-plugin/query-monitor"
+        "type:wordpress-muplugin"
       ],
       "public/content/plugins/vendor-{$name}/": [
         "type:wordpress-plugin"
