@@ -18,6 +18,14 @@ nix/.env*
 /public/content/mu-plugins/vendor-*
 /public/content/plugins/vendor-*
 /public/content/themes/vendor-*
+/public/content/mu-plugins/*
+# Now excluding all plugins because some plugins don't use proper path for their assets
+# so `vendor-` prefix breaks paths
+/public/content/plugins/*
+/public/content/themes/twentytwentyfive
+/public/content/themes/twentytwentysix
+/public/content/themes/twentytwentyseven
+/public/content/themes/twentytwentyeight
 # Ignore all content in the uploads and cache directories, except for .gitignore and index.php files
 /public/content/uploads/*
 !/public/content/uploads/.gitignore
