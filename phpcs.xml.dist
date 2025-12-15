@@ -6,21 +6,21 @@
   <!-- Base WordPress coding standards -->
   <rule ref="WordPress">
     <!-- Exclude WordPress tab indent rule to use spaces instead -->
-    <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+    <!-- <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/> -->
     <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
     <exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
   </rule>
 
   <!-- Force spaces instead of tabs -->
-  <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+  <!-- <rule ref="Generic.WhiteSpace.DisallowTabIndent"/> -->
 
   <!-- Enforce 4-space indentation -->
-  <rule ref="Generic.WhiteSpace.ScopeIndent">
-    <properties>
-      <property name="indent" value="4"/>
-      <property name="tabIndent" value="false"/>
-    </properties>
-  </rule>
+  <!-- <rule ref="Generic.WhiteSpace.ScopeIndent"> -->
+  <!--   <properties> -->
+  <!--     <property name="indent" value="4"/> -->
+  <!--     <property name="tabIndent" value="false"/> -->
+  <!--   </properties> -->
+  <!-- </rule> -->
 
   <!-- Exclude paths -->
   <exclude-pattern>*/node_modules/*</exclude-pattern>

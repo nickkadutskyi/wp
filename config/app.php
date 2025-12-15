@@ -39,35 +39,35 @@ $dotenv->bootEnv( $root_dir . '/.env' );
 
 // Ensure required environment variables are set.
 $required_env_vars = [
-    'WP_HOME',
-    'WP_SITEURL',
+	'WP_HOME',
+	'WP_SITEURL',
 ];
 // If DATABASE_URL is not set, require individual DB settings.
 if ( ! isset( $_ENV['DATABASE_URL'] ) ) {
-    $required_env_vars = array_merge(
-        $required_env_vars,
-        [
-            'DB_NAME',
-            'DB_USER',
-            'DB_PASSWORD',
-            'DB_HOST',
-        ]
-    );
+	$required_env_vars = array_merge(
+		$required_env_vars,
+		[
+			'DB_NAME',
+			'DB_USER',
+			'DB_PASSWORD',
+			'DB_HOST',
+		]
+	);
 }
 $missing_env_vars = array_filter(
-    $required_env_vars,
-    function ( $v ) {
-        return ! isset( $_ENV[ $v ] );
-    }
+	$required_env_vars,
+	function ( $v ) {
+		return ! isset( $_ENV[ $v ] );
+	}
 );
 if ( ! empty( $missing_env_vars ) ) {
-    throw new RuntimeException( 'Missing required environment variables: ' . implode( ', ', $missing_env_vars ) );
+	throw new RuntimeException( 'Missing required environment variables: ' . implode( ', ', $missing_env_vars ) );
 }
 
 // Sets WP's environment (local, development, staging, production).
 define( 'APP_ENV', $_ENV['APP_ENV'] ?? 'production' );
 if ( ! ( $_ENV['WP_ENVIRONMENT_TYPE'] ?? null ) && in_array( APP_ENV, [ 'production', 'staging', 'development', 'local' ], true ) ) {
-    define( 'WP_ENVIRONMENT_TYPE', $_ENV['WP_ENVIRONMENT_TYPE'] ?? 'production' );
+	define( 'WP_ENVIRONMENT_TYPE', $_ENV['WP_ENVIRONMENT_TYPE'] ?? 'production' );
 }
 
 
@@ -113,12 +113,12 @@ $table_prefix = $_ENV['TABLE_PREFIX'] ?? 'wp_'; // phpcs:ignore WordPress.WP.Glo
 
 // Got this from roots/bedrock.
 if ( isset( $_ENV['DATABASE_URL'] ) ) {
-    $dsn = (object) wp_parse_url( $_ENV['DATABASE_URL'] );
+	$dsn = (object) wp_parse_url( $_ENV['DATABASE_URL'] );
 
-    define( 'DB_HOST', isset( $dsn->port ) ? "{$dsn->host}:{$dsn->port}" : $dsn->host );
-    define( 'DB_NAME', substr( $dsn->path, 1 ) );
-    define( 'DB_USER', $dsn->user );
-    define( 'DB_PASSWORD', isset( $dsn->pass ) ? $dsn->pass : null );
+	define( 'DB_HOST', isset( $dsn->port ) ? "{$dsn->host}:{$dsn->port}" : $dsn->host );
+	define( 'DB_NAME', substr( $dsn->path, 1 ) );
+	define( 'DB_USER', $dsn->user );
+	define( 'DB_PASSWORD', isset( $dsn->pass ) ? $dsn->pass : null );
 }
 
 // Settings.
@@ -133,10 +133,10 @@ define( 'CONCATENATE_SCRIPTS', filter_var( $_ENV['CONCATENATE_SCRIPTS'] ?? false
 
 // Limit the number of post revisions.
 define(
-    'WP_POST_REVISIONS',
-    filter_var( $_ENV['WP_POST_REVISIONS'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE )
-        ?? filter_var( $_ENV['WP_POST_REVISIONS'] ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE )
-        ?? true
+	'WP_POST_REVISIONS',
+	filter_var( $_ENV['WP_POST_REVISIONS'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE )
+		?? filter_var( $_ENV['WP_POST_REVISIONS'] ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE )
+		?? true
 );
 
 define( 'DISABLE_WP_CRON', filter_var( $_ENV['DISABLE_WP_CRON'] ?? false, FILTER_VALIDATE_BOOL ) );
@@ -146,10 +146,10 @@ define( 'DISABLE_WP_CRON', filter_var( $_ENV['DISABLE_WP_CRON'] ?? false, FILTER
  * See https://developer.wordpress.org/reference/functions/is_ssl/#more-information
  */
 if ( 'https' === ( $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '' )
-        || 'https' === ( $_SERVER['HTTP_CLOUDFRONT_FORWARDED_PROTO'] ?? '' )
-        || 'https' === ( $_SERVER['CloudFront-Forwarded-Proto'] ?? '' )
+		|| 'https' === ( $_SERVER['HTTP_CLOUDFRONT_FORWARDED_PROTO'] ?? '' )
+		|| 'https' === ( $_SERVER['CloudFront-Forwarded-Proto'] ?? '' )
 ) {
-    $_SERVER['HTTPS'] = 'on';
+	$_SERVER['HTTPS'] = 'on';
 }
 
 /**
@@ -183,5 +183,5 @@ define( 'LOGGED_IN_SALT', $_ENV['LOGGED_IN_SALT'] ?? '' );
 define( 'NONCE_SALT', $_ENV['NONCE_SALT'] ?? '' );
 
 if ( ! defined( 'ABSPATH' ) ) {
-    define( 'ABSPATH', $webroot_dir . '/wp/' );
+	define( 'ABSPATH', $webroot_dir . '/wp/' );
 }
