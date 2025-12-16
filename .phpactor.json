@@ -1,23 +1,23 @@
 {
-    "language_server_phpstan.enabled": false,
-    "language_server_psalm.enabled": false,
-    "language_server_php_cs_fixer.enabled": false,
-    "indexer.exclude_patterns": [
-        "/vendor/**/Tests/**/*",
-        "/vendor/**/tests/**/*",
-        "/vendor/composer/**/*",
-        "/.direnv/",
-        "/.devenv/",
-        "/.git/",
-        "/.jj/",
-        "/public/wp/",
-        "/public/content/plugins/vendor-*/",
-        "/public/content/mu-plugins/vendor-*/",
-        "/public/content/themes/vendor-*/"
-    ],
-    "language_server.diagnostic_ignore_codes": [
-        "worse.docblock_missing_param",
-        "worse.missing_member"
-    ],
-    "php_code_sniffer.enabled": false
+  "language_server_phpstan.enabled": false,
+  "language_server_psalm.enabled": false,
+  "language_server_php_cs_fixer.enabled": false,
+  "indexer.exclude_patterns": [
+    "/vendor/**/Tests/**/*",
+    "/vendor/**/tests/**/*",
+    "/vendor/composer/**/*",
+    "/.direnv/",
+    "/.devenv/",
+    "/.git/",
+    "/.jj/",
+    "/public/wp/",
+    "/public/content/plugins/vendor-*/",
+    "/public/content/mu-plugins/vendor-*/",
+    "/public/content/themes/vendor-*/"
+  ],
+  "language_server.diagnostic_ignore_codes": [
+    "worse.docblock_missing_param",
+    "worse.missing_member"
+  ],
+  "php_code_sniffer.enabled": false
 }
