@@ -279,7 +279,7 @@ else
   # Step 4: Import to remote and search-replace
   echo -e "\n${GREEN}[4/4] Importing to remote and replacing URLs...${NC}"
   cat "$LOCAL_EXPORT" | remote_wp "$SSH_PATH" db import -
-  remote_wp "$SSH_PATH" search-replace "$LOCAL_URL" "$REMOTE_URL" --all-tables --quiet
+  remote_wp "$SSH_PATH" search-replace "$LOCAL_URL" "$REMOTE_URL" --all-tables --quiet --precise
   echo "  Done!"
 
   # Flush remote caches

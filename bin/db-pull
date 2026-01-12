@@ -190,7 +190,7 @@ echo "  Saved to: $REMOTE_BACKUP"
 # Step 4: Import and search-replace
 echo -e "\n${GREEN}[4/4] Importing database and replacing URLs...${NC}"
 $WP db import "$REMOTE_BACKUP" --quiet
-$WP search-replace "$REMOTE_URL" "$LOCAL_URL" --all-tables --quiet
+$WP search-replace "$REMOTE_URL" "$LOCAL_URL" --all-tables --quiet --precise
 echo "  Done!"
 
 # Flush rewrite rules and cache
