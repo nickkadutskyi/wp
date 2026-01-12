@@ -1,0 +1,179 @@
+#!/bin/bash
+#
+# Create a timestamped database backup
+#
+# Usage: bin/db-backup [environment] [ssh_host] [ssh_path]
+#
+# Examples:
+#   bin/db-backup                                        # Backup local
+#   bin/db-backup local                                  # Backup local
+#   bin/db-backup staging                                # Backup staging via SSH
+#   bin/db-backup production                             # Backup production via SSH
+#   bin/db-backup macbook nick@macbook.local /path/to/wp # Custom SSH host and path
+#
+# Configuration:
+#   For remote environments, set these in your .env.local:
+#   - PRODUCTION_SSH_HOST (e.g., user@example.com)
+#   - PRODUCTION_SSH_PATH (e.g., /var/www/example.com)
+#   - STAGING_SSH_HOST (e.g., user@staging.example.com)
+#   - STAGING_SSH_PATH (e.g., /var/www/staging.example.com)
+#
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Find wp-cli locally
+WP=
+if command -v wp >/dev/null; then
+  WP=$(command -v wp)
+elif [[ -x "$PROJECT_ROOT/vendor/bin/wp" ]]; then
+  WP="$PROJECT_ROOT/vendor/bin/wp"
+elif [[ -f "$PROJECT_ROOT/wp-cli.phar" ]]; then
+  [[ ! -x "$PROJECT_ROOT/wp-cli.phar" ]] && chmod +x "$PROJECT_ROOT/wp-cli.phar"
+  WP="$PROJECT_ROOT/wp-cli.phar"
+else
+  echo -e "${RED}Error: wp-cli not found${NC}" >&2
+  exit 1
+fi
+
+# Remote WP-CLI wrapper script (inline version for passing as argument)
+# This gets executed on the remote machine to find and run wp-cli
+# It handles: direnv/nix environments, vendor/bin/wp, and wp-cli.phar
+REMOTE_WP_INLINE='
+cd "$1" && shift
+if [[ -f .envrc ]] && command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv export bash 2>/dev/null)" || true
+fi
+if command -v wp >/dev/null 2>&1; then
+  wp "$@"
+elif [[ -x vendor/bin/wp ]]; then
+  vendor/bin/wp "$@"
+elif [[ -f wp-cli.phar ]]; then
+  php wp-cli.phar "$@"
+else
+  echo "Error: wp-cli not found on remote" >&2
+  exit 1
+fi
+'
+
+# Load environment variables
+load_env() {
+  local env_file="$1"
+  if [[ -f "$env_file" ]]; then
+    set -a
+    # shellcheck source=/dev/null
+    source "$env_file"
+    set +a
+  fi
+}
+
+# Load env files in order
+load_env "$PROJECT_ROOT/.env"
+load_env "$PROJECT_ROOT/.env.local"
+load_env "$PROJECT_ROOT/.env.development"
+load_env "$PROJECT_ROOT/.env.development.local"
+
+# Show usage
+show_usage() {
+  echo "Usage: bin/db-backup [environment] [ssh_host] [ssh_path]"
+  echo ""
+  echo "Arguments:"
+  echo "  environment   Environment name (local, production, staging, or custom label)"
+  echo "  ssh_host      Optional: SSH host (e.g., user@hostname)"
+  echo "  ssh_path      Optional: Remote project path"
+  echo ""
+  echo "Examples:"
+  echo "  bin/db-backup"
+  echo "  bin/db-backup local"
+  echo "  bin/db-backup production"
+  echo "  bin/db-backup staging"
+  echo "  bin/db-backup macbook nick@macbook.local /Users/nick/Sites/project"
+}
+
+# Default to local if no environment specified
+ENV="${1:-local}"
+ENV_UPPER=$(echo "$ENV" | tr '[:lower:]' '[:upper:]')
+
+# Create backups directory
+BACKUP_DIR="$PROJECT_ROOT/.db-backups"
+mkdir -p "$BACKUP_DIR"
+
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_FILE="$BACKUP_DIR/${ENV}_${TIMESTAMP}.sql"
+
+echo -e "${YELLOW}=== Database Backup: ${ENV} ===${NC}"
+
+if [[ "$ENV" == "local" ]]; then
+  # Local backup
+  cd "$PROJECT_ROOT"
+  echo -e "${GREEN}Exporting local database...${NC}"
+  $WP db export "$BACKUP_FILE" --quiet
+else
+  # Remote backup - get SSH config from args or env vars
+  SSH_HOST_VAR="${ENV_UPPER}_SSH_HOST"
+  SSH_PATH_VAR="${ENV_UPPER}_SSH_PATH"
+
+  # Use command line arguments if provided, otherwise fall back to env vars
+  if [[ -n "$2" ]]; then
+    SSH_HOST="$2"
+  else
+    SSH_HOST="${!SSH_HOST_VAR}"
+  fi
+
+  if [[ -n "$3" ]]; then
+    SSH_PATH="$3"
+  else
+    SSH_PATH="${!SSH_PATH_VAR}"
+  fi
+
+  # Validate SSH configuration
+  if [[ -z "$SSH_HOST" ]]; then
+    echo -e "${RED}Error: SSH host not specified${NC}"
+    echo "Either provide it as an argument or set ${SSH_HOST_VAR} in .env.local"
+    echo ""
+    show_usage
+    exit 1
+  fi
+
+  if [[ -z "$SSH_PATH" ]]; then
+    echo -e "${RED}Error: SSH path not specified${NC}"
+    echo "Either provide it as an argument or set ${SSH_PATH_VAR} in .env.local"
+    echo ""
+    show_usage
+    exit 1
+  fi
+
+  # Function to run wp-cli on remote
+  remote_wp() {
+    local path="$1"
+    shift
+    ssh "$SSH_HOST" "bash -c $(printf '%q' "$REMOTE_WP_INLINE")" -- "$path" "$@"
+  }
+
+  echo "Remote: ${SSH_HOST}:${SSH_PATH}"
+  echo -e "${GREEN}Exporting remote database...${NC}"
+  remote_wp "$SSH_PATH" db export - > "$BACKUP_FILE"
+fi
+
+# Show file size
+FILE_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+
+echo -e "\n${GREEN}=== Complete! ===${NC}"
+echo "Backup saved: $BACKUP_FILE"
+echo "Size: $FILE_SIZE"
+echo ""
+echo "To restore:"
+if [[ "$ENV" == "local" ]]; then
+  echo "  wp db import $BACKUP_FILE"
+else
+  echo "  cat $BACKUP_FILE | bin/db-push $ENV"
+fi
+
