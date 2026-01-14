@@ -110,6 +110,87 @@ wp core update-db
 
 (I will provide automated deployment scripts later)
 
+#### Database Sync Scripts
+
+Sync databases between environments (local, staging, production, or custom machines):
+
+```bash
+# Pull database from remote to local (creates backup automatically)
+bin/db-pull production      # Pull from production to local
+bin/db-pull staging         # Pull from staging to local
+bin/db-pull machine_name    # Pull from another dev machine, need to provide machine config in .env 
+                            # e.g. MACHINE_NAME_SSH_HOST and MACHINE_NAME_SSH_PATH
+
+# Push database from local to remote (creates backup automatically)
+bin/db-push staging         # Push local DB to staging (requires confirmation)
+bin/db-push production      # Push local DB to production (requires stricter confirmation)
+
+# Create backups
+bin/db-backup               # Backup local database
+bin/db-backup production    # Backup production database
+bin/db-backup staging       # Backup staging database
+```
+
+Database scripts automatically:
+- Create backups before any destructive operations
+- Handle URL search-replace for WordPress site URLs
+- Store backups in `.db-backups/` directory
+- Require confirmation prompts (stricter for production)
+
+#### Uploads Sync Scripts
+
+Sync the uploads directory between environments using rsync:
+
+```bash
+# Pull uploads from remote to local
+bin/uploads-pull production      # Pull from production to local
+bin/uploads-pull staging         # Pull from staging to local
+bin/uploads-pull machine_name    # Pull from another dev machine
+bin/uploads-pull staging --dry-run   # Preview what would be synced
+
+# Push uploads from local to remote
+bin/uploads-push staging         # Push local uploads to staging
+bin/uploads-push production      # Push local uploads to production (requires stricter confirmation)
+bin/uploads-push machine_name    # Push to another dev machine
+
+# Bidirectional sync between any two environments
+bin/uploads-sync production local     # Pull from production to local
+bin/uploads-sync local staging        # Push from local to staging
+bin/uploads-sync machine_name local   # Pull from machine_name to local
+bin/uploads-sync staging production   # Copy staging to production (via local)
+```
+
+Uploads scripts:
+- Use rsync for efficient transfer (only changed files)
+- Support `--dry-run` flag to preview changes
+- Exclude system files (.DS_Store, Thumbs.db, .gitignore, index.php)
+- Show size information before and after sync
+- Delete files on destination that don't exist in source (use `--dry-run` first!)
+- Require confirmation prompts (stricter for production)
+
+#### Environment Configuration
+
+Configure your environments in `.env.local`:
+
+```bash
+# Production
+PRODUCTION_SSH_HOST=user@example.com
+PRODUCTION_SSH_PATH=/var/www/example.com
+
+# Staging
+STAGING_SSH_HOST=user@staging.example.com
+STAGING_SSH_PATH=/var/www/staging.example.com
+
+# Other dev machines (for syncing between computers)
+MACHINE_NAME_SSH_HOST=nick@machinesite.com
+MACHINE_NAME_SSH_PATH=~/Documents/project_site
+```
+
+You can also override these settings via command line:
+```bash
+bin/db-pull custom user@myserver.com /path/to/site
+bin/uploads-pull custom user@myserver.com /path/to/site
+```
 ## Basics
 
 ### Using Composer
