@@ -13,10 +13,10 @@
 #
 # Configuration:
 #   Set these in your .env.local or .env.<environment>.local files:
-#   - PRODUCTION_SSH_HOST (e.g., user@botaabdul.com)
-#   - PRODUCTION_SSH_PATH (e.g., /var/www/botaabdul.com)
-#   - STAGING_SSH_HOST (e.g., user@staging.botaabdul.com)
-#   - STAGING_SSH_PATH (e.g., /var/www/staging.botaabdul.com)
+#   - PRODUCTION_SSH_HOST (e.g., user@example.com)
+#   - PRODUCTION_SSH_PATH (e.g., /var/www/example.com)
+#   - STAGING_SSH_HOST (e.g., user@staging.example.com)
+#   - STAGING_SSH_PATH (e.g., /var/www/staging.example.com)
 #
 # WARNING: This is a destructive operation on the remote database!
 #
@@ -232,7 +232,7 @@ else
   fi
 
   # Get local site URL
-  LOCAL_URL="${WP_HOME:-https://botaabdul.test}"
+  LOCAL_URL="${WP_HOME:-https://localhost}"
   LOCAL_EXPORT="$BACKUP_DIR/local_export_${TIMESTAMP}.sql"
 
   echo -e "${RED}!!! WARNING !!!${NC}"
