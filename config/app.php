@@ -67,9 +67,16 @@ if ( ! empty( $missing_env_vars ) ) {
 // Sets WP's environment (local, development, staging, production).
 define( 'APP_ENV', $_ENV['APP_ENV'] ?? 'production' );
 if ( ! ( $_ENV['WP_ENVIRONMENT_TYPE'] ?? null ) && in_array( APP_ENV, [ 'production', 'staging', 'development', 'local' ], true ) ) {
+	define( 'WP_ENVIRONMENT_TYPE', APP_ENV );
+} else {
 	define( 'WP_ENVIRONMENT_TYPE', $_ENV['WP_ENVIRONMENT_TYPE'] ?? 'production' );
 }
 
+if ( APP_ENV !== 'production' ) {
+	// `all` enables all development mode features (core, theme, plugin).
+	// Disables theme.json and patterns caching among other things.
+	define( 'WP_DEVELOPMENT_MODE', 'all' );
+}
 
 /**
  * Define WP_HOME and WP_SITEURL from environment variables
@@ -156,6 +163,7 @@ if ( 'https' === ( $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '' )
  * Debugging Settings
  */
 define( 'SAVEQUERIES', filter_var( $_ENV['SAVEQUERIES'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
+// WP_DEBUG set to `true` enables the debug mode throughout WordPress and shows errors and warnings.
 define( 'WP_DEBUG', filter_var( $_ENV['WP_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
 define( 'WP_DEBUG_DISPLAY', filter_var( $_ENV['WP_DEBUG_DISPLAY'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
 define( 'WP_DEBUG_LOG', filter_var( $_ENV['WP_DEBUG_LOG'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
