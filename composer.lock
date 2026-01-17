@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98de31c4972356828038d9f17034c1db",
+    "content-hash": "e28203b4229555a003dace24479dce96",
     "packages": [
         {
             "name": "composer/installers",
@@ -321,24 +321,6 @@
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/akismet/",
             "time": "2025-11-18T16:47:02+00:00"
-        },
-        {
-            "name": "wpackagist-plugin/wp-mail-smtp",
-            "version": "4.7.1",
-            "source": {
-                "type": "svn",
-                "url": "https://plugins.svn.wordpress.org/wp-mail-smtp/",
-                "reference": "tags/4.7.1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wp-mail-smtp.4.7.1.zip"
-            },
-            "require": {
-                "composer/installers": "^1.0 || ^2.0"
-            },
-            "type": "wordpress-plugin",
-            "homepage": "https://wordpress.org/plugins/wp-mail-smtp/"
         },
         {
             "name": "wpackagist-theme/twentytwentyfive",

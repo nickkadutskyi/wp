@@ -10,6 +10,17 @@
  */
 
 /**
+ * WP Offload SES Lite Plugin https://wordpress.org/plugins/wp-ses/
+ * To install `composer require wpackagist-plugin/wp-ses`
+ *
+ * Docs: https://deliciousbrains.com/amazon-ses-tutorial/
+ *
+ * Use this plugin if you need AWS SES because WP Mail SMTP has it only in the Pro version.
+ */
+
+// TODO: Implement WP Offload SES Lite settings via environment variables.
+
+/**
  * WP Mail SMTP Plugin https://wordpress.org/plugins/wp-mail-smtp/
  * To install `composer require wpackagist-plugin/wp-mail-smtp`
  *
@@ -62,4 +73,23 @@ if ( 'amazonses' === WPMS_MAILER ) {
 if ( 'gmail' === WPMS_MAILER ) {
 	define( 'WPMS_GMAIL_CLIENT_ID', $_ENV['WPMS_GMAIL_CLIENT_ID'] ?? '' );
 	define( 'WPMS_GMAIL_CLIENT_SECRET', $_ENV['WPMS_GMAIL_CLIENT_SECRET'] ?? '' );
+}
+
+/** Defining SMTP Constants. */
+if ( 'smtp' === WPMS_MAILER ) {
+	define( 'WPMS_SMTP_HOST', $_ENV['WPMS_SMTP_HOST'] ?? '' ); // The SMTP mail host.
+	define(
+		'WPMS_SMTP_PORT',
+		filter_var( $_ENV['WPMS_SMTP_PORT'] ?? 587, FILTER_VALIDATE_INT ) ?: 587
+	); // The SMTP server port number.
+	$wpms_ssl_raw = $_ENV['WPMS_SSL'] ?? '';
+	$wpms_ssl     = is_string( $wpms_ssl_raw ) ? trim( $wpms_ssl_raw ) : '';
+	if ( ! in_array( $wpms_ssl, [ '', 'ssl', 'tls' ], true ) ) {
+		throw new RuntimeException( 'Invalid WPMS_SSL value: ' . $wpms_ssl );
+	}
+	define( 'WPMS_SSL', $wpms_ssl ); // Possible values '', 'ssl', 'tls' - note TLS is not STARTTLS.
+	define( 'WPMS_SMTP_AUTH', filter_var( $_ENV['WPMS_SMTP_AUTH'] ?? true, FILTER_VALIDATE_BOOL ) ); // True turns it on, false turns it off.
+	define( 'WPMS_SMTP_USER', $_ENV['WPMS_SMTP_USER'] ?? '' ); // SMTP authentication username, only used if WPMS_SMTP_AUTH is true.
+	define( 'WPMS_SMTP_PASS', $_ENV['WPMS_SMTP_PASS'] ?? '' ); // SMTP authentication password, only used if WPMS_SMTP_AUTH is true.
+	define( 'WPMS_SMTP_AUTOTLS', filter_var( $_ENV['WPMS_SMTP_AUTOTLS'] ?? true, FILTER_VALIDATE_BOOL ) ); // True turns it on, false turns it off.
 }
