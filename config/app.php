@@ -166,7 +166,15 @@ define( 'SAVEQUERIES', filter_var( $_ENV['SAVEQUERIES'] ?? $_ENV['APP_DEBUG'] ??
 // WP_DEBUG set to `true` enables the debug mode throughout WordPress and shows errors and warnings.
 define( 'WP_DEBUG', filter_var( $_ENV['WP_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
 define( 'WP_DEBUG_DISPLAY', filter_var( $_ENV['WP_DEBUG_DISPLAY'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
-define( 'WP_DEBUG_LOG', filter_var( $_ENV['WP_DEBUG_LOG'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
+$wp_debug_log_raw = $_ENV['WP_DEBUG_LOG'] ?? $_ENV['APP_DEBUG'] ?? false;
+$wp_debug_log     = filter_var( $wp_debug_log_raw, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE );
+if ( null === $wp_debug_log ) {
+	$wp_debug_log = is_string( $wp_debug_log_raw ) && '' !== trim( $wp_debug_log_raw )
+		? trim( $wp_debug_log_raw )
+		: false;
+}
+
+define( 'WP_DEBUG_LOG', $wp_debug_log );
 define( 'SCRIPT_DEBUG', filter_var( $_ENV['SCRIPT_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
 define( 'WP_DISABLE_FATAL_ERROR_HANDLER', filter_var( $_ENV['WP_DISABLE_FATAL_ERROR_HANDLER'] ?? $_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL ) );
 
