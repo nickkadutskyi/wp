@@ -168,4 +168,10 @@ if ( WPMS_ON ) {
 		define( 'WPMS_SMTP_PASS', $_ENV['WPMS_SMTP_PASS'] ?? '' ); // SMTP authentication password, only used if WPMS_SMTP_AUTH is true.
 		define( 'WPMS_SMTP_AUTOTLS', filter_var( $_ENV['WPMS_SMTP_AUTOTLS'] ?? true, FILTER_VALIDATE_BOOL ) ); // True turns it on, false turns it off.
 	}
+
+	/** Defining Postmark Constants. */
+	if ( 'postmark' === WPMS_MAILER ) {
+		define( 'WPMS_POSTMARK_SERVER_API_TOKEN', $_ENV['WPMS_POSTMARK_SERVER_API_TOKEN'] ?? '' );
+		define( 'WPMS_POSTMARK_MESSAGE_STREAM', $_ENV['WPMS_POSTMARK_MESSAGE_STREAM'] ?? '' );
+	}
 }
