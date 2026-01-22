@@ -6,7 +6,7 @@ core update:
 core download:
   locale: "en_US"
   # Use this to lock the WordPress version
-  version: 6.8.1
+  version: 6.9
 disabled_commands:
   - db drop
   - plugin install
