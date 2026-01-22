@@ -38,6 +38,7 @@
     "ext-exif": "*",
     "ext-openssl": "*",
     "wpackagist-plugin/akismet": "dev-trunk",
+    "wpackagist-plugin/independent-analytics": "^2.14",
     "wpackagist-theme/twentytwentyfive": "*",
     "symfony/dotenv": "^7.3",
     "symfony/flex": "^2.10"
