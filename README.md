@@ -65,6 +65,12 @@ WordPress boilerplate with Composer
 5. Configure your web server to point to the `public` directory as the document root.
     And now you can access Admin Dashboard at https://wphomeurl/wp/wp-admin/
 
+6. Configure crontab `wp-cron.php` to run periodically (e.g. every 15 minutes) and disable WP-Cron in .env.production:
+
+    ```bash
+    */15 * * * * wget --delete-after "https://yourwphome/wp/wp-cron.php"
+    ```
+
 #### Multisite Setup
 Currently not automated.
 
