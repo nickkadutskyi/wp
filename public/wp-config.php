@@ -10,7 +10,5 @@
  */
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 require_once dirname( __DIR__ ) . '/config/app.php';
-require_once dirname( __DIR__ ) . '/config/mail.php';
-require_once dirname( __DIR__ ) . '/config/analytics.php';
 /** Sets up WordPress vars and included files. */
 require_once ABSPATH . 'wp-settings.php';

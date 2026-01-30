@@ -10,6 +10,7 @@
  * phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
  * phpcs:disable Generic.Commenting.DocComment.MissingShort
  * phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+ * phpcs:disable Universal.Operators.DisallowShortTernary.Found
  */
 
 declare(strict_types=1);
@@ -197,6 +198,15 @@ define( 'AUTH_SALT', $_ENV['AUTH_SALT'] ?? '' );
 define( 'SECURE_AUTH_SALT', $_ENV['SECURE_AUTH_SALT'] ?? '' );
 define( 'LOGGED_IN_SALT', $_ENV['LOGGED_IN_SALT'] ?? '' );
 define( 'NONCE_SALT', $_ENV['NONCE_SALT'] ?? '' );
+
+/**
+ * Load additional configuration files.
+ */
+$plugins_config_dir   = $root_dir . '/config/plugins';
+$plugins_config_files = glob( $plugins_config_dir . '/*.php' ) ?: [];
+foreach ( $plugins_config_files as $plugins_config_file ) {
+	require_once $plugins_config_file;
+}
 
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', $webroot_dir . '/wp/' );
