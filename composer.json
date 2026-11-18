@@ -33,15 +33,16 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.3",
+    "php": ">=8.4",
     "ext-curl": "*",
     "ext-exif": "*",
     "ext-openssl": "*",
     "wpackagist-plugin/akismet": "dev-trunk",
     "wpackagist-plugin/independent-analytics": "^2.14",
     "wpackagist-theme/twentytwentyfive": "*",
-    "symfony/dotenv": "^7.3",
-    "symfony/flex": "^2.10"
+    "symfony/dotenv": "^8.1",
+    "symfony/flex": "^2.10",
+    "wpackagist-plugin/wp-ses": "^1.7"
   },
   "extra": {
     "installer-paths": {

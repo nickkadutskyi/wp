@@ -9,7 +9,27 @@ indent_size = 2
 trim_trailing_whitespace = true
 max_line_length = 120
 
-[*.{php,json,css,scss,html}]
+# Editor tools per language: LSP servers, linters (inspect), and formatters (style).
+# A `!` prefix disables a tool.
+tools_lsp = phpactor,intelephense,!psalm,jsonls,!twiggy_language_server
+
+[*.php]
+indent_style = tab
+indent_size = 4
+tools_inspect = phpstan,psalm,phpcs
+tools_style = phpcbf,!intelephense
+
+[*.{css,scss}]
+indent_style = tab
+indent_size = 4
+tools_style = prettierd
+
+[*.json]
+indent_style = tab
+indent_size = 4
+tools_style = jsonls
+
+[*.html]
 indent_style = tab
 indent_size = 4
 

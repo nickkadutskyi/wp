@@ -62,7 +62,11 @@
                     initialDatabases = [ { name = getEnvDefault "DB_NAME" "wp"; } ];
                     settings = {
                       mysqld = {
-                        port = getEnvDefault "DB_PORT" "3306";
+                        # TODO Pick a DB port that's unique to this project (e.g. 3351) so its MariaDB
+                        # can run alongside other projects' dev servers. Set it as the default here and
+                        # as DB_PORT in .env.development (the app reads it there), or override both with
+                        # DB_PORT in .env.development.local.
+                        port = builtins.fromJSON (getEnvDefault "DB_PORT" "3306");
                       };
                     };
                   };
@@ -70,7 +74,7 @@
                   # PHP configuration
                   languages.php = {
                     enable = true;
-                    version = "8.4";
+                    version = "8.5";
                     extensions = [
                       "xdebug"
                       "imagick"
@@ -149,14 +153,26 @@
                   );
 
                   # Nginx configuration
+                  # Nginx serves plain HTTP only. HTTPS and the *.test domain come from a Caddy reverse
+                  # proxy in front of it, so there are no certificates or HTTPS server here.
                   services.nginx = {
                     enable = true;
                     httpConfig = # conf
                       let
                         DocumentRoot = (config.env.DEVENV_ROOT + "/public");
-                        NginxPort = getEnvDefault "LOCAL_NGINX_PORT" "80";
-                        NginxSSLPort = getEnvDefault "LOCAL_NGINX_SSL_PORT" "443";
-                        CertPath = config.env.DEVENV_STATE + "/mkcert";
+                        # TODO Pick an Nginx port that's unique to this project (e.g. 8006), set it as the
+                        # default here (or LOCAL_NGINX_PORT in .env.development.local), then add the site
+                        # to your Caddyfile so Caddy proxies its *.test domain (the WP_HOME host in
+                        # .env.development) to this port with a local certificate:
+                        #
+                        #   wp.test {
+                        #     tls internal
+                        #     reverse_proxy 127.0.0.1:8080
+                        #   }
+                        #
+                        # The *.test name must resolve to 127.0.0.1 (/etc/hosts or dnsmasq). Caddy sends
+                        # X-Forwarded-Proto, which config/app.php uses to detect HTTPS.
+                        NginxPort = getEnvDefault "LOCAL_NGINX_PORT" "8080";
                       in
                       ''
                         keepalive_timeout  65;
@@ -171,8 +187,9 @@
 
                             index index.php index.htm index.html;
 
-                            # Preserve port in redirects
-                            port_in_redirect on;
+                            # Do not preserve port in redirects to avoid issues with non-standard ports
+                            # while behind a reverse proxy or load balancer.
+                            port_in_redirect off;
 
                             # Prevent PHP scripts from being executed inside the uploads folder.
                             location ~* /content/uploads/.*.php$ {
@@ -189,59 +206,16 @@
                               include ${pkgs.nginx}/conf/fastcgi_params;
                               fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                               fastcgi_param SERVER_PORT $server_port;
-                              fastcgi_intercept_errors on;
-                            }
-                        }
-
-                        # HTTPS server
-                        server {
-                            listen       ${NginxSSLPort} ssl;
-                            server_name  ${ServerName};
-                            root ${DocumentRoot};
-                            access_log ${config.env.DEVENV_STATE}/nginx/access.log;
-                            error_log  ${config.env.DEVENV_STATE}/nginx/error.log error;
-
-                            # SSL configuration
-                            ssl_certificate ${CertPath}/${ServerName}.pem;
-                            ssl_certificate_key ${CertPath}/${ServerName}-key.pem;
-                            ssl_protocols TLSv1.2 TLSv1.3;
-                            ssl_ciphers HIGH:!aNULL:!MD5;
-                            ssl_prefer_server_ciphers on;
-
-                            index index.php index.htm index.html;
-
-                            # Preserve port in redirects
-                            port_in_redirect on;
-
-                            # Prevent PHP scripts from being executed inside the uploads folder.
-                            location ~* /content/uploads/.*.php$ {
-                              deny all;
-                            }
-                            location / {
-                              try_files $uri $uri/ /index.php?$args;
-                            }
-
-                            location ~ \.php$ {
-                              try_files $uri =404;
-                              fastcgi_pass 127.0.0.1:${FPMPort};
-                              fastcgi_index index.php;
-                              include ${pkgs.nginx}/conf/fastcgi_params;
-                              fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                              fastcgi_param SERVER_PORT $server_port;
-                              fastcgi_param HTTPS on;
                               fastcgi_intercept_errors on;
                             }
                         }
                       '';
                   };
-
-                  # Generate SSL certificates using mkcert
-                  certificates = [ ServerName ];
                 }
               )
             ]
             ++ (
-              if pkgs.stdenv.isDarwin then
+              if pkgs.stdenv.hostPlatform.isDarwin then
                 [
                   # Uncomment the following line to enable Apache virtual host configuration on macOS
                   # It copies a pre-defined vhost configuration file to your Apache config directory

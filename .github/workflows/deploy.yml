@@ -1,0 +1,233 @@
+# Deploys the site to staging or production: builds it with Composer on the runner,
+# writes the environment's secrets into .env.<environment>.local, compiles them into
+# .env.local.php, rsyncs the result to the server over SSH, then runs WP-CLI there.
+#
+# TODO Configure before the first deploy:
+#
+# 1. In GitHub, open Settings → Environments and create two environments named
+#    `staging` and `production`. Give `production` a protection rule (required
+#    reviewers) so production deploys need an approval.
+#
+# 2. Add these secrets to EACH environment (Settings → Environments → <env> → Secrets):
+#    - SSH_PRIVATE_KEY   Private key whose public key is in the server user's ~/.ssh/authorized_keys
+#    - DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
+#    - AUTH_KEY, SECURE_AUTH_KEY, LOGGED_IN_KEY, NONCE_KEY,
+#      AUTH_SALT, SECURE_AUTH_SALT, LOGGED_IN_SALT, NONCE_SALT
+#      (generate at https://api.wordpress.org/secret-key/1.1/salt/, different per environment)
+#    - Mail, only for the plugin you use (see .env):
+#      WPOSES_AWS_ACCESS_KEY_ID, WPOSES_AWS_SECRET_ACCESS_KEY (WP Offload SES Lite)
+#      WPMS_POSTMARK_SERVER_API_TOKEN (WP Mail SMTP with Postmark)
+#
+# 3. Add these variables to EACH environment (Settings → Environments → <env> → Variables):
+#    - SSH_HOST      Server hostname, e.g. example.com
+#    - SSH_USER      SSH user with passwordless sudo, e.g. admin or bitnami
+#    - DEPLOY_PATH   Absolute project path on the server, e.g. /var/www/example.com
+#                    (the web server's document root must be $DEPLOY_PATH/public)
+#    - DB_PORT       Database port, e.g. 3306
+#    - WP_HOME       Site URL, shown as the deployment link, e.g. https://staging.example.com
+#    - WEB_GROUP     Optional: group the web server runs as (default www-data, daemon on Bitnami)
+#
+# 4. Set WP_HOME in .env.staging and .env.production to the same URLs. Other
+#    non-secret settings for an environment go in .env.<environment>, which is committed.
+#
+# The same SSH_HOST/SSH_PATH values also go in .env.local as PRODUCTION_SSH_* and
+# STAGING_SSH_* for the bin/db-* and bin/uploads-* scripts.
+
+name: Deploy WordPress
+
+on:
+  # Deploys only run when started by hand: Actions → Deploy WordPress → Run workflow.
+  #
+  # TODO To deploy staging automatically on every commit to main, uncomment the
+  # `push` trigger below. Pushes always deploy to staging; production still needs
+  # a manual run with `production` selected.
+  #
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  # A push has no inputs, so it deploys to staging
+  DEPLOY_ENV: ${{ github.event.inputs.environment || 'staging' }}
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    # Secrets and variables below come from this GitHub environment
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: ${{ vars.WP_HOME }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, curl, zip, gd, intl, mysql
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies (production)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Create environment local file
+        env:
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ vars.DB_PORT }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          AUTH_KEY: ${{ secrets.AUTH_KEY }}
+          SECURE_AUTH_KEY: ${{ secrets.SECURE_AUTH_KEY }}
+          LOGGED_IN_KEY: ${{ secrets.LOGGED_IN_KEY }}
+          NONCE_KEY: ${{ secrets.NONCE_KEY }}
+          AUTH_SALT: ${{ secrets.AUTH_SALT }}
+          SECURE_AUTH_SALT: ${{ secrets.SECURE_AUTH_SALT }}
+          LOGGED_IN_SALT: ${{ secrets.LOGGED_IN_SALT }}
+          NONCE_SALT: ${{ secrets.NONCE_SALT }}
+          WPOSES_AWS_ACCESS_KEY_ID: ${{ secrets.WPOSES_AWS_ACCESS_KEY_ID }}
+          WPOSES_AWS_SECRET_ACCESS_KEY: ${{ secrets.WPOSES_AWS_SECRET_ACCESS_KEY }}
+          WPMS_POSTMARK_SERVER_API_TOKEN: ${{ secrets.WPMS_POSTMARK_SERVER_API_TOKEN }}
+        run: |
+          cat > ".env.${DEPLOY_ENV}.local" << EOF
+          DB_NAME='${DB_NAME}'
+          DB_USER='${DB_USER}'
+          DB_PASSWORD='${DB_PASSWORD}'
+          DB_PORT=${DB_PORT}
+          DB_HOST=${DB_HOST}
+          DB_CHARSET=utf8mb4
+          DB_COLLATE=''
+
+          AUTH_KEY='${AUTH_KEY}'
+          SECURE_AUTH_KEY='${SECURE_AUTH_KEY}'
+          LOGGED_IN_KEY='${LOGGED_IN_KEY}'
+          NONCE_KEY='${NONCE_KEY}'
+          AUTH_SALT='${AUTH_SALT}'
+          SECURE_AUTH_SALT='${SECURE_AUTH_SALT}'
+          LOGGED_IN_SALT='${LOGGED_IN_SALT}'
+          NONCE_SALT='${NONCE_SALT}'
+
+          WPOSES_AWS_ACCESS_KEY_ID='${WPOSES_AWS_ACCESS_KEY_ID}'
+          WPOSES_AWS_SECRET_ACCESS_KEY='${WPOSES_AWS_SECRET_ACCESS_KEY}'
+          WPMS_POSTMARK_SERVER_API_TOKEN='${WPMS_POSTMARK_SERVER_API_TOKEN}'
+          EOF
+
+      # Compiles .env, .env.<environment> and .env.<environment>.local into .env.local.php
+      - name: Generate cached environment file
+        run: composer dump-env "$DEPLOY_ENV"
+
+      - name: Download WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+
+      - name: Install WordPress core
+        run: bin/wp-install
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # Uploads and the server's own .env.*.local files are excluded, so they survive --delete
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete --rsync-path='sudo rsync' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.devenv' \
+            --exclude='.direnv' \
+            --exclude='.db-backups' \
+            --exclude='.env.local' \
+            --exclude='.env.*.local' \
+            --exclude='public/content/uploads' \
+            --exclude='public/content/upgrade' \
+            --exclude='nix' \
+            --exclude='*.log' \
+            --exclude='.phpcs-cache' \
+            --exclude='.jj' \
+            ./ ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:${{ vars.DEPLOY_PATH }}/
+
+      - name: Post-deployment tasks
+        run: |
+          ssh ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }} << 'EOF'
+            cd ${{ vars.DEPLOY_PATH }}
+            sudo mkdir -p public/content/uploads
+
+            # The SSH user owns the files and the web server's group can write to them.
+            # See https://docs.bitnami.com/aws/apps/wordpress/administration/understand-file-permissions/
+            sudo chown -R ${{ vars.SSH_USER }}:${{ vars.WEB_GROUP || 'www-data' }} ${{ vars.DEPLOY_PATH }}
+            sudo find ${{ vars.DEPLOY_PATH }} -type d -exec chmod 775 {} \;
+            sudo find ${{ vars.DEPLOY_PATH }} -type f -exec chmod 664 {} \;
+            sudo chmod 640 ${{ vars.DEPLOY_PATH }}/public/wp-config.php
+            sudo chmod 640 ${{ vars.DEPLOY_PATH }}/config/app.php
+            sudo chmod 640 ${{ vars.DEPLOY_PATH }}/.env.local.php
+
+            # Keep PHP deprecations out of wp-cli's stdout
+            export WP_CLI_PHP_ARGS='-d error_reporting=E_ALL^E_DEPRECATED'
+            # Find wp-cli: wp-cli.phar, then vendor/bin/wp, then $WPCOMMAND or wp in PATH
+            WP=
+            if [ -f "./wp-cli.phar" ]; then
+              # Run through php: the chmod 664 above removes the execute bit
+              WP="php -d error_reporting=E_ALL^E_DEPRECATED ./wp-cli.phar"
+            elif [ -f "./vendor/bin/wp" ]; then
+              WP="bash ./vendor/bin/wp"
+            elif [ -n "$WPCOMMAND" ] || command -v wp &> /dev/null; then
+              WP="${WPCOMMAND:-wp}"
+            fi
+
+            # Run database migrations if needed
+            if [ -n "$WP" ]; then
+              echo "Running database updates..."
+              $WP core update-db || true
+
+              echo "Flushing cache and clearing pattern registry..."
+              $WP cache flush || true
+              $WP rewrite flush || true
+
+              echo "Clearing OPcache..."
+              $WP eval 'if (function_exists("opcache_reset")) { opcache_reset(); echo "OPcache cleared\n"; }' || true
+
+              echo "Re-initializing theme to register new patterns..."
+              CURRENT_THEME=$($WP theme list --status=active --field=name)
+              # Only accept a theme slug, not PHP notices or other output
+              if [[ "$CURRENT_THEME" =~ ^[A-Za-z0-9._-]+$ ]]; then
+                echo "Switching theme: $CURRENT_THEME"
+                $WP eval "switch_theme('$CURRENT_THEME');" || true
+              else
+                echo "Skipping theme switch, unexpected theme name: $CURRENT_THEME"
+              fi
+            fi
+
+            echo "Deployment complete!"
+          EOF
