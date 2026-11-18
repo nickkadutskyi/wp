@@ -80,9 +80,27 @@ if ( APP_ENV !== 'production' ) {
 }
 
 /**
+ * Serve the site under a machine specific *.ts.test host (e.g. wp.mini0.ts.test)
+ * when accessed from another machine over Tailscale, instead of redirecting to WP_HOME.
+ */
+$http_host = isset( $_SERVER['HTTP_HOST'] ) && is_string( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '';
+if ( in_array( APP_ENV, [ 'development', 'local' ], true )
+		&& preg_match( '/^[a-z0-9.-]+\.ts\.test(:\d+)?$/i', $http_host )
+) {
+	/** @var string $env_home */
+	$env_home = $_ENV['WP_HOME'] ?? '';
+	/** @var string $env_siteurl */
+	$env_siteurl = $_ENV['WP_SITEURL'] ?? '';
+	$ts_home     = 'https://' . $http_host;
+	if ( str_starts_with( $env_siteurl, $env_home ) ) {
+		$_ENV['WP_SITEURL'] = $ts_home . substr( $env_siteurl, strlen( $env_home ) );
+	}
+	$_ENV['WP_HOME'] = $ts_home;
+}
+
+/**
  * Define WP_HOME and WP_SITEURL from environment variables
  */
-$http_host    = isset( $_SERVER['HTTP_HOST'] ) && is_string( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '';
 $default_home = '' !== $http_host ? 'https://' . $http_host : '';
 define( 'WP_HOME', $_ENV['WP_HOME'] ?? $default_home );
 define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? $default_home );

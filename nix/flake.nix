@@ -165,13 +165,18 @@
                         # to your Caddyfile so Caddy proxies its *.test domain (the WP_HOME host in
                         # .env.development) to this port with a local certificate:
                         #
-                        #   wp.test {
+                        #   wp.test, wp.<machine>.ts.test {
                         #     tls internal
-                        #     reverse_proxy 127.0.0.1:8080
+                        #     reverse_proxy localhost:8080
                         #   }
                         #
                         # The *.test name must resolve to 127.0.0.1 (/etc/hosts or dnsmasq). Caddy sends
                         # X-Forwarded-Proto, which config/app.php uses to detect HTTPS.
+                        #
+                        # The wp.<machine>.ts.test name lets other machines on your tailnet open this dev
+                        # server: point it at this machine's Tailscale IP on those machines and trust this
+                        # Caddy's local CA there. config/app.php then serves the site under that host
+                        # instead of redirecting to WP_HOME.
                         NginxPort = getEnvDefault "LOCAL_NGINX_PORT" "8080";
                       in
                       ''
