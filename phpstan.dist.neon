@@ -7,10 +7,12 @@ parameters:
     - public/content
     - config
   excludePaths:
-    analyze:
+    analyse:
       - public/content/mu-plugins/vendor-*
-      - public/content/plugins/vendor-*
       - public/content/themes/vendor-*
+      # Composer installs plugins and default themes without the vendor- prefix (see .gitignore)
+      - public/content/plugins/*
+      - public/content/themes/twentytwenty*
       - public/content/uploads
       - public/wp
       - vendor

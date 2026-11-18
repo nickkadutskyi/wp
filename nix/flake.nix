@@ -80,7 +80,7 @@
                       "imagick"
                     ];
                     ini = ''
-                      memory_limit=256M
+                      memory_limit=512M
                       log_errors_max_len=0
                       error_log=${config.env.DEVENV_STATE}/php/error.log
                       log_errors=1

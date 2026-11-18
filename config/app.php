@@ -82,8 +82,10 @@ if ( APP_ENV !== 'production' ) {
 /**
  * Define WP_HOME and WP_SITEURL from environment variables
  */
-define( 'WP_HOME', $_ENV['WP_HOME'] ?? ( isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' ) );
-define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? ( isset( $_SERVER['HTTP_HOST'] ) ? 'https://' . $_SERVER['HTTP_HOST'] : '' ) );
+$http_host    = isset( $_SERVER['HTTP_HOST'] ) && is_string( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '';
+$default_home = '' !== $http_host ? 'https://' . $http_host : '';
+define( 'WP_HOME', $_ENV['WP_HOME'] ?? $default_home );
+define( 'WP_SITEURL', $_ENV['WP_SITEURL'] ?? $default_home );
 
 // Custom content directory.
 /** @var string $content_dir */
@@ -97,6 +99,19 @@ $wp_home = $_ENV['WP_HOME'] ?? '';
 define( 'WP_CONTENT_URL', $wp_home . $content_dir );
 
 // // ** Database settings - You can get this info from your web host ** //
+
+// DATABASE_URL (e.g. mysql://user:pass@host:3306/name) overrides the DB_* variables.
+// Got this from roots/bedrock.
+if ( isset( $_ENV['DATABASE_URL'] ) && is_string( $_ENV['DATABASE_URL'] ) ) {
+	// wp_parse_url() isn't loaded yet.
+	$dsn = parse_url( $_ENV['DATABASE_URL'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+	if ( is_array( $dsn ) && isset( $dsn['host'], $dsn['path'], $dsn['user'] ) ) {
+		$_ENV['DB_HOST']     = isset( $dsn['port'] ) ? "{$dsn['host']}:{$dsn['port']}" : $dsn['host'];
+		$_ENV['DB_NAME']     = substr( $dsn['path'], 1 );
+		$_ENV['DB_USER']     = rawurldecode( $dsn['user'] );
+		$_ENV['DB_PASSWORD'] = rawurldecode( $dsn['pass'] ?? '' );
+	}
+}
 
 /** The name of the database for WordPress */
 define( 'DB_NAME', $_ENV['DB_NAME'] ?? '' );
@@ -118,16 +133,6 @@ define( 'DB_COLLATE', $_ENV['DB_COLLATE'] ?? '' );
  * a unique prefix. Only numbers, letters, and underscores please!
  */
 $table_prefix = $_ENV['TABLE_PREFIX'] ?? 'wp_'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-// Got this from roots/bedrock.
-if ( isset( $_ENV['DATABASE_URL'] ) ) {
-	$dsn = (object) wp_parse_url( $_ENV['DATABASE_URL'] );
-
-	define( 'DB_HOST', isset( $dsn->port ) ? "{$dsn->host}:{$dsn->port}" : $dsn->host );
-	define( 'DB_NAME', substr( $dsn->path, 1 ) );
-	define( 'DB_USER', $dsn->user );
-	define( 'DB_PASSWORD', isset( $dsn->pass ) ? $dsn->pass : null );
-}
 
 // Settings.
 // Prevent plugin and theme modifications via file editor.
