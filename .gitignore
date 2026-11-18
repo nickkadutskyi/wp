@@ -21,6 +21,7 @@ nix/.env*
 # Now excluding all plugins because some plugins don't use proper path for their assets
 # so `vendor-` prefix breaks paths
 /public/content/mu-plugins/*
+!/public/content/mu-plugins/disable-comments.php
 /public/content/plugins/*
 /public/content/themes/twentytwentyfive
 /public/content/themes/twentytwentysix
@@ -63,3 +64,7 @@ phpstan.neon
 ###> phpstan/phpstan ###
 phpstan.neon
 ###< phpstan/phpstan ###
+
+###> database backups ###
+/.db-backups/
+###< database backups ###

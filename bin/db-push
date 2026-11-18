@@ -40,13 +40,13 @@ NC='\033[0m' # No Color
 
 # Find wp-cli locally (only needed if not using stdin)
 find_local_wp() {
-  if command -v wp >/dev/null; then
-    echo "$(command -v wp)"
+  if [[ -f "$PROJECT_ROOT/wp-cli.phar" ]]; then
+    # Hide PHP deprecations, which PHP prints to stdout
+    echo "php -d error_reporting=E_ALL^E_DEPRECATED $PROJECT_ROOT/wp-cli.phar"
   elif [[ -x "$PROJECT_ROOT/vendor/bin/wp" ]]; then
     echo "$PROJECT_ROOT/vendor/bin/wp"
-  elif [[ -f "$PROJECT_ROOT/wp-cli.phar" ]]; then
-    [[ ! -x "$PROJECT_ROOT/wp-cli.phar" ]] && chmod +x "$PROJECT_ROOT/wp-cli.phar"
-    echo "$PROJECT_ROOT/wp-cli.phar"
+  elif command -v wp >/dev/null; then
+    command -v wp
   else
     echo ""
   fi
@@ -54,18 +54,20 @@ find_local_wp() {
 
 # Remote WP-CLI wrapper script (inline version for passing as argument)
 # This gets executed on the remote machine to find and run wp-cli
-# It handles: direnv/nix environments, vendor/bin/wp, and wp-cli.phar
+# It handles: direnv/nix environments, wp-cli.phar, vendor/bin/wp, and wp
 REMOTE_WP_INLINE='
 cd "$1" && shift
 if [[ -f .envrc ]] && command -v direnv >/dev/null 2>&1; then
   eval "$(direnv export bash 2>/dev/null)" || true
 fi
-if command -v wp >/dev/null 2>&1; then
-  wp "$@"
+# Keep PHP deprecations out of wp-cli stdout (used by vendor/bin/wp and wp)
+export WP_CLI_PHP_ARGS="-d error_reporting=E_ALL^E_DEPRECATED"
+if [[ -f wp-cli.phar ]]; then
+  php -d error_reporting=E_ALL^E_DEPRECATED wp-cli.phar "$@"
 elif [[ -x vendor/bin/wp ]]; then
   vendor/bin/wp "$@"
-elif [[ -f wp-cli.phar ]]; then
-  php wp-cli.phar "$@"
+elif command -v wp >/dev/null 2>&1; then
+  wp "$@"
 else
   echo "Error: wp-cli not found on remote" >&2
   exit 1
@@ -77,6 +79,15 @@ remote_wp() {
   local path="$1"
   shift
   ssh "$SSH_HOST" "bash -c $(printf '%q' "$REMOTE_WP_INLINE")" -- "$path" "$@"
+}
+
+# Fail unless a file starts like an SQL dump (not PHP notices or errors)
+check_sql_dump() {
+  if ! head -n1 "$1" | grep -qE '^(/\*|-- )'; then
+    echo -e "${RED}Error: $1 does not look like an SQL dump. It starts with:${NC}" >&2
+    head -n3 "$1" >&2
+    return 1
+  fi
 }
 
 # Load environment variables
@@ -171,6 +182,7 @@ if [[ "$HAS_STDIN" == "true" ]]; then
   # Save stdin to a temp file so we can use it after prompts
   STDIN_FILE="$BACKUP_DIR/.stdin_${TIMESTAMP}.sql"
   cat > "$STDIN_FILE"
+  check_sql_dump "$STDIN_FILE" || { rm -f "$STDIN_FILE"; exit 1; }
 
   echo -e "${RED}!!! WARNING !!!${NC}"
   echo -e "${YELLOW}=== Database Restore to ${ENV} ===${NC}"
@@ -203,6 +215,7 @@ if [[ "$HAS_STDIN" == "true" ]]; then
   echo -e "\n${GREEN}[1/2] Backing up remote database...${NC}"
   REMOTE_BACKUP="$BACKUP_DIR/${ENV}_backup_${TIMESTAMP}.sql"
   remote_wp "$SSH_PATH" db export - > "$REMOTE_BACKUP"
+  check_sql_dump "$REMOTE_BACKUP"
   echo "  Saved to: $REMOTE_BACKUP"
 
   # Step 2: Import from stdin file
@@ -262,12 +275,17 @@ else
   # Step 1: Get remote site URL
   echo -e "\n${GREEN}[1/4] Getting remote site URL...${NC}"
   REMOTE_URL=$(remote_wp "$SSH_PATH" option get home)
+  if [[ ! "$REMOTE_URL" =~ ^https?://[^[:space:]]+$ ]]; then
+    echo -e "${RED}Error: unexpected remote URL:${NC} $REMOTE_URL" >&2
+    exit 1
+  fi
   echo "  Remote URL: $REMOTE_URL"
 
   # Step 2: Backup remote database
   echo -e "\n${GREEN}[2/4] Backing up remote database...${NC}"
   REMOTE_BACKUP="$BACKUP_DIR/${ENV}_backup_${TIMESTAMP}.sql"
   remote_wp "$SSH_PATH" db export - > "$REMOTE_BACKUP"
+  check_sql_dump "$REMOTE_BACKUP"
   echo "  Saved to: $REMOTE_BACKUP"
 
   # Step 3: Export local database
@@ -293,4 +311,3 @@ else
   echo "To restore the remote backup:"
   echo "  cat $REMOTE_BACKUP | bin/db-push $ENV"
 fi
-

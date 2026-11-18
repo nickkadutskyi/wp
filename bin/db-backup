@@ -32,13 +32,13 @@ NC='\033[0m' # No Color
 
 # Find wp-cli locally
 WP=
-if command -v wp >/dev/null; then
-  WP=$(command -v wp)
+if [[ -f "$PROJECT_ROOT/wp-cli.phar" ]]; then
+  # Hide PHP deprecations, which PHP prints to stdout
+  WP="php -d error_reporting=E_ALL^E_DEPRECATED $PROJECT_ROOT/wp-cli.phar"
 elif [[ -x "$PROJECT_ROOT/vendor/bin/wp" ]]; then
   WP="$PROJECT_ROOT/vendor/bin/wp"
-elif [[ -f "$PROJECT_ROOT/wp-cli.phar" ]]; then
-  [[ ! -x "$PROJECT_ROOT/wp-cli.phar" ]] && chmod +x "$PROJECT_ROOT/wp-cli.phar"
-  WP="$PROJECT_ROOT/wp-cli.phar"
+elif command -v wp >/dev/null; then
+  WP=$(command -v wp)
 else
   echo -e "${RED}Error: wp-cli not found${NC}" >&2
   exit 1
@@ -46,23 +46,34 @@ fi
 
 # Remote WP-CLI wrapper script (inline version for passing as argument)
 # This gets executed on the remote machine to find and run wp-cli
-# It handles: direnv/nix environments, vendor/bin/wp, and wp-cli.phar
+# It handles: direnv/nix environments, wp-cli.phar, vendor/bin/wp, and wp
 REMOTE_WP_INLINE='
 cd "$1" && shift
 if [[ -f .envrc ]] && command -v direnv >/dev/null 2>&1; then
   eval "$(direnv export bash 2>/dev/null)" || true
 fi
-if command -v wp >/dev/null 2>&1; then
-  wp "$@"
+# Keep PHP deprecations out of wp-cli stdout (used by vendor/bin/wp and wp)
+export WP_CLI_PHP_ARGS="-d error_reporting=E_ALL^E_DEPRECATED"
+if [[ -f wp-cli.phar ]]; then
+  php -d error_reporting=E_ALL^E_DEPRECATED wp-cli.phar "$@"
 elif [[ -x vendor/bin/wp ]]; then
   vendor/bin/wp "$@"
-elif [[ -f wp-cli.phar ]]; then
-  php wp-cli.phar "$@"
+elif command -v wp >/dev/null 2>&1; then
+  wp "$@"
 else
   echo "Error: wp-cli not found on remote" >&2
   exit 1
 fi
 '
+
+# Fail unless a file starts like an SQL dump (not PHP notices or errors)
+check_sql_dump() {
+  if ! head -n1 "$1" | grep -qE '^(/\*|-- )'; then
+    echo -e "${RED}Error: $1 does not look like an SQL dump. It starts with:${NC}" >&2
+    head -n3 "$1" >&2
+    return 1
+  fi
+}
 
 # Load environment variables
 load_env() {
@@ -163,6 +174,8 @@ else
   remote_wp "$SSH_PATH" db export - > "$BACKUP_FILE"
 fi
 
+check_sql_dump "$BACKUP_FILE"
+
 # Show file size
 FILE_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
 
@@ -176,4 +189,3 @@ if [[ "$ENV" == "local" ]]; then
 else
   echo "  cat $BACKUP_FILE | bin/db-push $ENV"
 fi
-

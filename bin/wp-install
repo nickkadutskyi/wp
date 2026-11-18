@@ -1,13 +1,13 @@
 #!/bin/bash
-# Find wp-cli if not found in PATH
+# Find wp-cli: wp-cli.phar in project root, then vendor/bin/wp, then wp in PATH
 WP=
-if command -v wp >/dev/null; then
-  WP=$(which wp)
+if [[ -f "./wp-cli.phar" ]]; then
+  # Hide PHP deprecations, which PHP prints to stdout
+  WP="php -d error_reporting=E_ALL^E_DEPRECATED ./wp-cli.phar"
 elif [[ -x "vendor/bin/wp" ]]; then
   WP="vendor/bin/wp"
-elif [[ -f "./wp-cli.phar" ]]; then
-  [[ ! -x "./wp-cli.phar" ]] && chmod +x wp-cli.phar
-  WP="./wp-cli.phar"
+elif command -v wp >/dev/null; then
+  WP=$(command -v wp)
 else
   echo "wp-cli not found" >&2
   exit 1
@@ -15,7 +15,8 @@ fi
 
 echo "Using wp-cli: $($WP --info | grep 'WP-CLI version')"
 
-CURRENT_VERSION=$($WP core version)
+# Keep only the version number; wp-cli may print PHP notices to stdout too
+CURRENT_VERSION=$($WP core version 2>/dev/null | grep -Eo '^[0-9]+(\.[0-9]+)+' | tail -n1)
 
 if [ -z "$CURRENT_VERSION" ]; then
   echo "WordPress core is not installed"

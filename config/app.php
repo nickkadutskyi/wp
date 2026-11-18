@@ -149,6 +149,9 @@ define(
 
 define( 'DISABLE_WP_CRON', filter_var( $_ENV['DISABLE_WP_CRON'] ?? false, FILTER_VALIDATE_BOOL ) );
 
+// Close comments and pingbacks site-wide (see mu-plugins/disable-comments.php).
+define( 'DISABLE_COMMENTS', filter_var( $_ENV['DISABLE_COMMENTS'] ?? false, FILTER_VALIDATE_BOOL ) );
+
 /**
  * Allow WordPress to detect HTTPS when used behind a reverse proxy or load balancer
  * See https://developer.wordpress.org/reference/functions/is_ssl/#more-information
